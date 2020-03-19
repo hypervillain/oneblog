@@ -45,6 +45,8 @@ const Posts = ({relay, repository}: Props) => {
 
   const issues = repository.issues.edges || [];
 
+  console.log({ issues })
+
   return (
     <Box>
       {issues.map((e, i) =>

@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/core": "^10.0.28",
     "@reach/router": "1.2.0",
+    "@theme-ui/presets": "^0.3.0",
     "@tippy.js/react": "^2.2.2",
     "aws-serverless-express": "^3.3.6",
     "cookie-parser": "^1.4.4",
@@ -34,6 +36,7 @@
     "sentence-case": "^3.0.3",
     "serialize-javascript": "^2.1.2",
     "styled-components": "^5.0.0",
+    "theme-ui": "^0.3.1",
     "universal-cookie": "^4.0.3"
   },
   "scripts": {
@@ -58,7 +61,11 @@
     "extends": "react-app"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
@@ -72,7 +79,7 @@
     "babel-plugin-relay": "^8.0.0",
     "flow-bin": "^0.117.0",
     "graphql": "^14.4.2",
-    "netlify-cli": "^2.4.8",
+    "netlify-cli": "^2.40.0",
     "netlify-lambda": "^1.6.2",
     "prettier": "^1.18.2",
     "razzle": "^3.0.0",

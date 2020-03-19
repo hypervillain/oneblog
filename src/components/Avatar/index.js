@@ -1,28 +1,25 @@
 // @flow
 import React from 'react';
-import UserContext from './UserContext';
-import imageUrl from './imageUrl';
+import UserContext from '../../UserContext';
+import imageUrl from '../../imageUrl';
 import {Box} from 'grommet/components/Box';
 import {Image} from 'grommet/components/Image';
 import {Drop} from 'grommet/components/Drop';
 import {Button} from 'grommet/components/Button';
 import {Text} from 'grommet/components/Text';
 import {Logout} from 'grommet-icons/icons/Logout';
-import {Add} from 'grommet-icons/icons/Add';
-import {MoreVertical} from 'grommet-icons/icons/MoreVertical';
 import {Github} from 'grommet-icons/icons/Github';
-import GitHubLoginButton from './GitHubLoginButton';
-import {newIssueUrl} from './issueUrls';
+import {newIssueUrl} from '../../issueUrls';
 import {createFragmentContainer, type RelayProp} from 'react-relay';
 import {useFragment} from 'react-relay/hooks';
 import graphql from 'babel-plugin-relay/macro';
 
-import type {LoginStatus} from './UserContext';
+import type {LoginStatus} from '../../UserContext';
 import type {
   Avatar_gitHub$key,
   Avatar_gitHub$data,
   GitHubRepositoryPermission,
-} from './__generated__/Avatar_gitHub.graphql';
+} from '../../__generated__/Avatar_gitHub.graphql';
 
 const MANAGE_LABEL_ROLES: Array<GitHubRepositoryPermission> = [
   'ADMIN',
@@ -117,7 +114,7 @@ export default function Avatar({gitHub, adminLinks: extraAdminLinks}: Props) {
           plain
           onClick={() => login()}
           label={
-            <Text size="xsmall" color="dark-5">
+            <Text size="xsmall">
               Login
             </Text>
           }

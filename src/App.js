@@ -32,13 +32,18 @@ import {StatusCritical} from 'grommet-icons/icons/StatusCritical';
 import UserContext from './UserContext';
 import {Helmet} from 'react-helmet';
 import {ScrollContext} from 'gatsby-react-router-scroll';
-import Avatar from './Avatar';
 import config from './config';
 import {css} from 'styled-components';
 import {editIssueUrl} from './issueUrls';
 import {Github} from 'grommet-icons/icons/Github';
 import PreloadCache from './preloadQueryCache';
 import PreloadCacheContext from './PreloadCacheContext';
+
+import Header from './components/Header'
+
+import ThemeProvider, { Reset } from './theme'
+
+import IndexPage from './pages/IndexPage'
 
 import type {LoginStatus} from './UserContext';
 import type {
@@ -83,58 +88,6 @@ export const theme = deepMerge(generate(24, 10), {
     },
   },
 });
-
-function Header({gitHub, adminLinks}) {
-  return (
-    <>
-      <Box margin="medium" style={{position: 'absolute', top: 0, right: 0}}>
-        <Avatar gitHub={gitHub} adminLinks={adminLinks} />
-      </Box>
-      <PostBox>
-        <Box
-          pad={{horizontal: 'medium'}}
-          border={{
-            size: 'xsmall',
-            side: 'bottom',
-            color: 'rgba(0,0,0,0.1)',
-          }}>
-          <Heading style={{marginTop: 0}} level={1}>
-            <Link
-              getProps={({isCurrent}) => ({
-                style: isCurrent
-                  ? {
-                      textDecoration: 'none',
-                      color: 'inherit',
-                      cursor: 'auto',
-                    }
-                  : {color: 'inherit'},
-              })}
-              to="/">
-              {config.title || 'OneBlog'}
-            </Link>
-          </Heading>
-        </Box>
-      </PostBox>
-    </>
-  );
-}
-
-const postsRootQuery = graphql`
-  # repoName and repoOwner provided by fixedVariables
-  query App_Query($repoName: String!, $repoOwner: String!)
-    @persistedQueryConfiguration(
-      accessToken: {environmentVariable: "OG_GITHUB_TOKEN"}
-      fixedVariables: {environmentVariable: "REPOSITORY_FIXED_VARIABLES"}
-      cacheSeconds: 300
-    ) {
-    gitHub {
-      ...Avatar_gitHub @arguments(repoName: $repoName, repoOwner: $repoOwner)
-      repository(name: $repoName, owner: $repoOwner) {
-        ...Posts_repository
-      }
-    }
-  }
-`;
 
 const ErrorBox = ({error}: {error: any}) => {
   const relayError = error?.source?.errors?.[0]?.message;
@@ -183,24 +136,6 @@ class ErrorBoundary extends React.Component<{children: *}, {error: ?Error}> {
       return <ErrorBox error={this.state.error} />;
     }
     return this.props.children;
-  }
-}
-
-function PostsRoot({preloadedQuery}: {preloadedQuery: any}) {
-  const data: App_QueryResponse = usePreloadedQuery<App_QueryResponse>(
-    postsRootQuery,
-    preloadedQuery,
-  );
-  const respository = data?.gitHub ? data?.gitHub.repository : null;
-  if (!respository || !data.gitHub) {
-    return <ErrorBox error={new Error('Repository not found.')} />;
-  } else {
-    return (
-      <>
-        <Header gitHub={data.gitHub} adminLinks={[]} />
-        <Posts repository={respository} />
-      </>
-    );
   }
 }
 
@@ -292,7 +227,7 @@ const Route = React.memo(function Route({
   const {loginStatus} = React.useContext(UserContext);
   return (
     <div style={{position: 'relative'}}>
-      <div className="layout">
+      <div>
         <ErrorBoundary>
           <React.Suspense fallback={null}>
             <routeConfig.component
@@ -345,15 +280,6 @@ function makeRoute({path, query, getVariables, component}) {
   };
 }
 
-const postsRoute = makeRoute({
-  path: '/',
-  query: postsRootQuery,
-  getVariables(props: any) {
-    return {};
-  },
-  component: PostsRoot,
-});
-
 export const postRoute = makeRoute({
   path: '/post/:issueNumber/:slug?',
   query: postRootQuery,
@@ -367,7 +293,7 @@ export const postRoute = makeRoute({
 
 const postRouteNoSlug = {...postRoute, path: '/post/:issueNumber'};
 
-export const routes = [postsRoute, postRoute, postRouteNoSlug];
+export const routes = [IndexPage, postRoute, postRouteNoSlug];
 
 function shouldUpdateScroll(prevRouterProps, {location}) {
   const {pathname, hash} = location;
@@ -457,25 +383,27 @@ export default function App({
           <meta charSet="utf-8" />
         </Helmet>
         <NotificationContainer>
-          <Grommet theme={theme}>
-            <Location>
-              {({location}) => (
-                <ScrollContextWrapper location={location}>
-                  <Router primary={true} basepath={basepath}>
-                    {routes.map((routeConfig, i) => (
-                      <Route
-                        key={i}
-                        path={routeConfig.path}
-                        environment={environment}
-                        cache={cache}
-                        routeConfig={routeConfig}
-                      />
-                    ))}
-                  </Router>
-                </ScrollContextWrapper>
-              )}
-            </Location>
-          </Grommet>
+          <ThemeProvider>
+            <Grommet theme={theme}>
+              <Location>
+                {({location}) => (
+                  <ScrollContextWrapper location={location}>
+                    <Router primary={true} basepath={basepath}>
+                      {routes.map((routeConfig, i) => (
+                        <Route
+                          key={i}
+                          path={routeConfig.path}
+                          environment={environment}
+                          cache={cache}
+                          routeConfig={routeConfig}
+                        />
+                      ))}
+                    </Router>
+                  </ScrollContextWrapper>
+                )}
+              </Location>
+            </Grommet>
+          </ThemeProvider>
         </NotificationContainer>
       </UserContext.Provider>
     </RelayEnvironmentProvider>
