@@ -12,54 +12,15 @@ const ThemeProvider = memo(({ children, ...props }) => (
   </ThemeP>
 ))
 
-
-// .add - reaction - emoji {
-//     fill: rgb(88, 96, 105);
-//     stroke: rgb(88, 96, 105);
-//     display: flex;
-//     align - items: center;
-//     font - size: 16 px;
-//     cursor: pointer;
-//     outline: none;
-//   }
-
-//   .add - reaction - emoji: hover {
-//     fill: #0366d6;
-//   stroke: # 0366 d6;
-//   }
-
-
-// .layout {
-//   box - sizing: border - box;
-//   max - width: 704 px;
-//   margin: auto;
-//   width: 100 % ;
-//   height: 100 % ; -
-//   webkit - box - pack: center; -
-//   webkit - justify - content: center; -
-//   ms - flex - pack: center;
-//   justify - content: center;
-//   grid - template - rows: auto 1 fr;
-//   overflow - wrap: break -word;
-// }
-
-// blockquote {
-//   font - style: italic;
-//   box - shadow: inset 3 px 0 0 0 rgba(0, 0, 0, 0.27);
-//   margin - inline - start: 0;
-//   margin - inline - end: 0;
-//   padding - left: 1 em;
-// }
-
-// li p {
-//   margin: 0;
-// }
-
 const Reset = () => (
   <Global
     styles={{
+      html: {
+        background: 'tomato'
+      },
       body: {
-        margin: '0',
+        margin: '0px 8px 0 8px',
+        border: '1px solid #111'
       },
       'h1, h2, h3, h4, h5, h6': {
         margin: 0,
@@ -69,6 +30,12 @@ const Reset = () => (
       },
       a: {
         textDecoration: 'none',
+      },
+      'a:hover': {
+        textDecoration: 'underline'
+      },
+      'a:visited': {
+        color: 'inherit'
       },
       button: {
         border: 0,

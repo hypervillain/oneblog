@@ -245,6 +245,7 @@ export default class MarkdownRenderer extends React.PureComponent<Props> {
         escapeHtml={this.props.escapeHtml}
         source={this.props.source}
         renderers={defaultRenderers({SyntaxHighlighter})}
+        // disallowedTypes={['table']}
         astPlugins={this.props.escapeHtml ? [parseHtml] : []}
       />
     );

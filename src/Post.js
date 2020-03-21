@@ -20,18 +20,21 @@ import {postRoute} from './App';
 import GitHubLoginButton from './GitHubLoginButton';
 import {NotificationContext} from './Notifications';
 import {Box} from 'grommet/components/Box';
-import {Heading} from 'grommet/components/Heading';
+import { Heading } from 'theme-ui';
 import {Text} from 'grommet/components/Text';
 import UserContext from './UserContext';
 import {lowerCase} from 'lower-case';
 import {sentenceCase} from 'sentence-case';
 import unified from 'unified';
 import parse from 'remark-parse';
+import stringify from 'remark-stringify'
 import imageUrl from './imageUrl';
 import {Helmet} from 'react-helmet';
 import PreloadCacheContext from './PreloadCacheContext';
 
 import type {Post_post} from './__generated__/Post_post.graphql';
+
+const markdownParser = unified().use(parse).use(stringify);
 
 // n.b. no accessToken in the persistedQueryConfiguration for these mutations,
 // because we want to add reactions on behalf of the logged-in user, not the
@@ -401,8 +404,6 @@ export function postPath({
   }`;
 }
 
-const markdownParser = unified().use(parse);
-
 function visitBackmatter(node, fn) {
   if (node.type === 'code' && node.lang === 'backmatter') {
     fn(node);
@@ -438,6 +439,29 @@ export function computePostDate(post: {
   return new Date(post.createdAt);
 }
 
+function parseTableNode(node) {
+  const values = {}
+  for (const row of node.children) {
+    if (row.children.length === 2) {
+      const key = row.children[0].children[0].value
+      const value = row.children[1].children[0].value
+      values[key] = value
+    }
+  }
+  return values
+}
+
+function getMetaData(ast) {
+  if (ast.children.length && ast.children[0]) {
+    const maybeTable = ast.children[0]
+    const { type } = maybeTable
+    if (type !== 'table') {
+      return {}
+    }
+    return parseTableNode(maybeTable)
+  }
+
+}
 export const Post = ({relay, post, context}: Props) => {
   const environment = useRelayEnvironment();
   const cache = React.useContext(PreloadCacheContext);
@@ -457,10 +481,20 @@ export const Post = ({relay, post, context}: Props) => {
     g => g.users.totalCount > 0,
   );
   const authors = post.assignees.nodes || [];
+
+  let { body } = post
+  const ast = markdownParser.parse(post.body);
+  const meta = getMetaData(ast)
+  
+  // Remove metadata from md string
+  if (Object.keys(meta).length) {
+    ast.children = ast.children.slice(1, ast.children.length) 
+    body = markdownParser.stringify(ast)
+  }
   return (
     <PostBox>
       <Box pad="medium">
-        <Heading level={1} margin="none">
+        <Heading>
           {context === 'details' ? (
             post.title
           ) : (
@@ -469,48 +503,9 @@ export const Post = ({relay, post, context}: Props) => {
             </Link>
           )}
         </Heading>
-
-        {authors.length > 0 ? (
-          <Box direction="row" gap="medium">
-            {authors.map((node, i) =>
-              node ? (
-                <Box
-                  key={node.id}
-                  align="center"
-                  direction="row"
-                  margin={{vertical: 'medium'}}>
-                  <a href={node.url}>
-                    <Box>
-                      <img
-                        alt={node.name}
-                        src={imageUrl({src: node.avatarUrl})}
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: '50%',
-                          marginRight: 8,
-                        }}
-                      />
-                    </Box>
-                  </a>
-                  <Box>
-                    <a href={node.url}>
-                      <Text size="small">{node.name || node.login}</Text>
-                    </a>
-                    <Text
-                      size="xsmall"
-                      style={{visibility: i === 0 ? 'visible' : 'hidden'}}>
-                      {formatDate(postDate, 'MMM do, yyyy')}
-                    </Text>
-                  </Box>
-                </Box>
-              ) : null,
-            )}
-          </Box>
-        ) : null}
         <Box direction="row" justify="between"></Box>
         <Text>
-          <MarkdownRenderer escapeHtml={true} source={post.body} />
+          <MarkdownRenderer escapeHtml={false} source={body} />
         </Text>
       </Box>
       <ReactionBar

@@ -1,11 +1,5 @@
 import React from 'react'
 
-import {Grommet} from 'grommet/components/Grommet';
-import {Grid} from 'grommet/components/Grid';
-import {Heading} from 'grommet/components/Heading';
-import {Text} from 'grommet/components/Text';
-import {Anchor} from 'grommet/components/Anchor';
-
 import { Flex, Box } from 'theme-ui'
 
 import Link from '../../PreloadLink';
@@ -38,27 +32,35 @@ const Header = ({
   adminLinks
 }) => {
   return (
-    <Flex
-      sx={{
-        borderBottom: '1px solid black',
-        alignItems: 'center'
-      }}
-    >
-      <Box p={2} pl={4} sx={{ flex: '1 1 auto' }}>
-        <Box p={2} pl={4} sx={absBoxSx} />
-        <Link
-          getProps={({ isCurrent }) => ({
-            style: isCurrent ? linkCurrentStyle : { color: 'inherit' },
-          })}
-          to="/"
-        >
-          { config.title }
-        </Link> | <a href="#">Index</a> | <a href="#">About</a>
-      </Box>
-      <Box p={2} pr={4} bg="tomato">
-        <Avatar gitHub={gitHub} adminLinks={adminLinks} />
-      </Box>
-    </Flex>
+    <>
+      <Flex
+        as="header"
+        bg="background"
+        sx={{
+          borderBottom: '1px solid black',
+          alignItems: 'center',
+          position: 'fixed',
+          width: 'calc(100% - 16px - 2px)',
+          left: '9px',
+          top: '0'
+        }}
+      >
+        <Box p={2} pl={4} sx={{ flex: '1 1 auto' }}>
+          <Box p={2} pl={4} sx={absBoxSx} />
+          <Link
+            getProps={({ isCurrent }) => ({
+              style: isCurrent ? linkCurrentStyle : { color: 'inherit' },
+            })}
+            to="/"
+          >
+            { config.title }
+          </Link> | <a href="#">Index</a> | <a href="#">About</a>
+        </Box>
+        <Box p={2} pr={4} bg="tomato">
+          <Avatar gitHub={gitHub} adminLinks={adminLinks} />
+        </Box>
+      </Flex>
+    </>
   );
 }
 

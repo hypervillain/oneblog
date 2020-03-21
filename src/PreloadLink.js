@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react';
-import {Link} from '@reach/router';
+import { Link } from '@reach/router';
 import {pick} from '@reach/router/lib/utils';
 import {routes} from './App';
 import {fetchQuery} from 'react-relay';

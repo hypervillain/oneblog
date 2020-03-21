@@ -21,17 +21,17 @@ import {NotificationContainer, NotificationContext} from './Notifications';
 import OneGraphLogo from './oneGraphLogo';
 import {Grommet} from 'grommet/components/Grommet';
 import {Grid} from 'grommet/components/Grid';
-import {Box} from 'grommet/components/Box';
+
 import {Heading} from 'grommet/components/Heading';
 import {Text} from 'grommet/components/Text';
 import {Anchor} from 'grommet/components/Anchor';
 import {ResponsiveContext} from 'grommet/contexts/ResponsiveContext';
-import {generate} from 'grommet/themes/base';
 import {deepMerge} from 'grommet/utils/object';
 import {StatusCritical} from 'grommet-icons/icons/StatusCritical';
 import UserContext from './UserContext';
 import {Helmet} from 'react-helmet';
 import {ScrollContext} from 'gatsby-react-router-scroll';
+import Avatar from './components/Avatar';
 import config from './config';
 import {css} from 'styled-components';
 import {editIssueUrl} from './issueUrls';
@@ -39,11 +39,13 @@ import {Github} from 'grommet-icons/icons/Github';
 import PreloadCache from './preloadQueryCache';
 import PreloadCacheContext from './PreloadCacheContext';
 
+import {
+  Box
+} from 'theme-ui';
+
+import Index from './pages/index'
 import Header from './components/Header'
-
 import ThemeProvider, { Reset } from './theme'
-
-import IndexPage from './pages/IndexPage'
 
 import type {LoginStatus} from './UserContext';
 import type {
@@ -55,39 +57,22 @@ import type {App_PostQueryResponse} from './__generated__/App_PostQuery.graphql'
 import type {Environment} from 'relay-runtime';
 import type {RelayNetworkError} from 'react-relay';
 
-export const theme = deepMerge(generate(24, 10), {
-  global: {
-    colors: {
-      brand: '#1997c6',
-      'accent-1': '#3cc7b7',
-      focus: 'rgba(60, 199, 183, 0.75)',
-    },
-    font: {
-      family:
-        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
-    },
-  },
-  anchor: {
-    fontWeight: 'normal',
-    textDecoration: 'underline',
-    color: null,
-  },
-  button: {
-    border: {
-      radius: 4,
-    },
-    extend(props) {
-      return props.plain
-        ? null
-        : css`
-            &:hover {
-              box-shadow: none;
-              color: ${props.theme.global.colors.brand};
-            }
-          `;
-    },
-  },
-});
+export const postsRootQuery = graphql`
+  # repoName and repoOwner provided by fixedVariables
+  query App_Query($repoName: String!, $repoOwner: String!)
+    @persistedQueryConfiguration(
+      accessToken: {environmentVariable: "OG_GITHUB_TOKEN"}
+      fixedVariables: {environmentVariable: "REPOSITORY_FIXED_VARIABLES"}
+      cacheSeconds: 300
+    ) {
+    gitHub {
+      ...Avatar_gitHub @arguments(repoName: $repoName, repoOwner: $repoOwner)
+      repository(name: $repoName, owner: $repoOwner) {
+        ...Posts_repository
+      }
+    }
+  }
+`;
 
 const ErrorBox = ({error}: {error: any}) => {
   const relayError = error?.source?.errors?.[0]?.message;
@@ -136,6 +121,26 @@ class ErrorBoundary extends React.Component<{children: *}, {error: ?Error}> {
       return <ErrorBox error={this.state.error} />;
     }
     return this.props.children;
+  }
+}
+
+function PostsRoot({preloadedQuery}: {preloadedQuery: any}) {
+  const data: App_QueryResponse = usePreloadedQuery<App_QueryResponse>(
+    postsRootQuery,
+    preloadedQuery,
+  );
+  const respository = data?.gitHub ? data?.gitHub.repository : null;
+  if (!respository || !data.gitHub) {
+    return <ErrorBox error={new Error('Repository not found.')} />;
+  } else {
+    return (
+      <>
+        <Header gitHub={data.gitHub} adminLinks={[]} />
+        <Box mt="2">
+          <Posts repository={respository} />
+        </Box>
+      </>
+    );
   }
 }
 
@@ -280,6 +285,15 @@ function makeRoute({path, query, getVariables, component}) {
   };
 }
 
+const postsRoute = makeRoute({
+  path: '/',
+  query: postsRootQuery,
+  getVariables(props: any) {
+    return {};
+  },
+  component: Index,
+});
+
 export const postRoute = makeRoute({
   path: '/post/:issueNumber/:slug?',
   query: postRootQuery,
@@ -293,7 +307,7 @@ export const postRoute = makeRoute({
 
 const postRouteNoSlug = {...postRoute, path: '/post/:issueNumber'};
 
-export const routes = [IndexPage, postRoute, postRouteNoSlug];
+export const routes = [postsRoute, postRoute, postRouteNoSlug];
 
 function shouldUpdateScroll(prevRouterProps, {location}) {
   const {pathname, hash} = location;
@@ -382,27 +396,26 @@ export default function App({
           ) : null}
           <meta charSet="utf-8" />
         </Helmet>
+        <Reset />
         <NotificationContainer>
           <ThemeProvider>
-            <Grommet theme={theme}>
-              <Location>
-                {({location}) => (
-                  <ScrollContextWrapper location={location}>
-                    <Router primary={true} basepath={basepath}>
-                      {routes.map((routeConfig, i) => (
-                        <Route
-                          key={i}
-                          path={routeConfig.path}
-                          environment={environment}
-                          cache={cache}
-                          routeConfig={routeConfig}
-                        />
-                      ))}
-                    </Router>
-                  </ScrollContextWrapper>
-                )}
-              </Location>
-            </Grommet>
+            <Location>
+              {({location}) => (
+                <ScrollContextWrapper location={location}>
+                  <Router primary={true} basepath={basepath}>
+                    {routes.map((routeConfig, i) => (
+                      <Route
+                        key={i}
+                        path={routeConfig.path}
+                        environment={environment}
+                        cache={cache}
+                        routeConfig={routeConfig}
+                      />
+                    ))}
+                  </Router>
+                </ScrollContextWrapper>
+              )}
+            </Location>
           </ThemeProvider>
         </NotificationContainer>
       </UserContext.Provider>

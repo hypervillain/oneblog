@@ -4,49 +4,29 @@ import { usePreloadedQuery } from 'react-relay/hooks'
 import makeRoute from '../utils/makeRoute'
 import Posts from '../Posts'
 
-// const postsRootQuery = graphql `
-//   # repoName and repoOwner provided by fixedVariables
-//   query Index_Query($repoName: String!, $repoOwner: String!)
-//     @persistedQueryConfiguration(
-//       accessToken: {environmentVariable: "OG_GITHUB_TOKEN"}
-//       fixedVariables: {environmentVariable: "REPOSITORY_FIXED_VARIABLES"}
-//       cacheSeconds: 300
-//     ) {
-//     gitHub {
-//       ...Avatar_gitHub @arguments(repoName: $repoName, repoOwner: $repoOwner)
-//       repository(name: $repoName, owner: $repoOwner) {
-//         ...Posts_repository
-//       }
-//     }
-//   }
-// `;
+import Header from '../components/Header'
 
-// const Index = ({ preloadedQuery }) => {
-//   const data = usePreloadedQuery(
-//     postsRootQuery,
-//     preloadedQuery
-//   );
-//   console.log({ git: data && data.gitHub.repository })
-//   const respository = data?.gitHub ? data?.gitHub.repository : null;
-//   if (!respository || !data.gitHub) {
-//     return <p>cannot find Gihtub repository...</p>
-//   } else {
-//     return (
-//       <>
-//         <Header gitHub={data.gitHub} adminLinks={[]} />
-//         <main className="layout">
-//           <Posts repository={respository} />
-//         </main>
-//       </>
-//     );
-//   }
-// }
+import { postsRootQuery } from '../App'
 
-// export default makeRoute({
-//   path: '/',
-//   query: postsRootQuery,
-//   getVariables(_) {
-//     return {};
-//   },
-//   component: Index,
-// });
+const Index = ({ preloadedQuery }) => {
+  const data = usePreloadedQuery(
+    postsRootQuery,
+    preloadedQuery
+  );
+  console.log({ git: data && data.gitHub.repository })
+  const respository = data?.gitHub ? data?.gitHub.repository : null;
+  if (!respository || !data.gitHub) {
+    return <p>cannot find Gihtub repository...</p>
+  } else {
+    return (
+      <>
+        <Header gitHub={data.gitHub} adminLinks={[]} />
+        <main>
+          <Posts repository={respository} />
+        </main>
+      </>
+    );
+  }
+}
+
+export default Index

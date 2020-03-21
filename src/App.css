@@ -13,28 +13,6 @@
   stroke: #0366d6;
 }
 
-a {
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-pre {
-  overflow: scroll;
-}
-
-pre code {
-  background: none;
-}
-
-code {
-  background: rgb(248, 248, 248);
-  font-size: 0.8em;
-  padding: 2px 4px;
-}
-
 .layout {
   box-sizing: border-box;
   max-width: 704px;
@@ -59,4 +37,8 @@ blockquote {
 
 li p {
   margin: 0;
+}
+
+img {
+  max-width: 100%;
 }
