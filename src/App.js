@@ -2,6 +2,9 @@
 
 import React from 'react';
 import './App.css';
+
+/** @jsx jsx */
+import { jsx } from 'theme-ui'
 import graphql from 'babel-plugin-relay/macro';
 import stableCopy from 'relay-runtime/lib/util/stableCopy';
 import {QueryRenderer, fetchQuery} from 'react-relay';
@@ -136,7 +139,7 @@ function PostsRoot({preloadedQuery}: {preloadedQuery: any}) {
     return (
       <>
         <Header gitHub={data.gitHub} adminLinks={[]} />
-        <Box mt="2">
+        <Box mt="4">
           <Posts repository={respository} />
         </Box>
       </>
@@ -169,7 +172,11 @@ export const postRootQuery = graphql`
         issue(number: $issueNumber) {
           labels(first: 100) {
             nodes {
+              id
+              url
               name
+              description
+              color
             }
           }
           title
@@ -202,9 +209,6 @@ function PostRoot({preloadedQuery}: {preloadedQuery: any}) {
   } else {
     return (
       <>
-        <Helmet>
-          <title>{post.title}</title>
-        </Helmet>
         <Header
           gitHub={data.gitHub}
           adminLinks={[

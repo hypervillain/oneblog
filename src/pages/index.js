@@ -1,7 +1,10 @@
 import React from 'react'
+/** @jsx jsx */
+import { jsx } from 'theme-ui'
 import graphql from 'babel-plugin-relay/macro';
 import { usePreloadedQuery } from 'react-relay/hooks'
-import makeRoute from '../utils/makeRoute'
+
+import { Box } from 'theme-ui'
 import Posts from '../Posts'
 
 import Header from '../components/Header'
@@ -13,7 +16,6 @@ const Index = ({ preloadedQuery }) => {
     postsRootQuery,
     preloadedQuery
   );
-  console.log({ git: data && data.gitHub.repository })
   const respository = data?.gitHub ? data?.gitHub.repository : null;
   if (!respository || !data.gitHub) {
     return <p>cannot find Gihtub repository...</p>
@@ -21,9 +23,9 @@ const Index = ({ preloadedQuery }) => {
     return (
       <>
         <Header gitHub={data.gitHub} adminLinks={[]} />
-        <main>
+        <Box as="main" mt={5} >
           <Posts repository={respository} />
-        </main>
+        </Box>
       </>
     );
   }

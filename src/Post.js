@@ -19,17 +19,22 @@ import Link from './PreloadLink';
 import {postRoute} from './App';
 import GitHubLoginButton from './GitHubLoginButton';
 import {NotificationContext} from './Notifications';
-import {Box} from 'grommet/components/Box';
-import { Heading } from 'theme-ui';
-import {Text} from 'grommet/components/Text';
+
+import {
+  Heading,
+  Text,
+  Box,
+} from 'theme-ui';
+
 import UserContext from './UserContext';
 import {lowerCase} from 'lower-case';
 import {sentenceCase} from 'sentence-case';
 import unified from 'unified';
 import parse from 'remark-parse';
 import stringify from 'remark-stringify'
-import imageUrl from './imageUrl';
-import {Helmet} from 'react-helmet';
+import config from './config'
+
+import { Helmet } from 'react-helmet';
 import PreloadCacheContext from './PreloadCacheContext';
 
 import type {Post_post} from './__generated__/Post_post.graphql';
@@ -230,7 +235,7 @@ type Props = {
 export function PostBox({children}: {children: React.Node}) {
   return (
     <Box
-      pad="medium"
+      p={2}
       style={{
         maxWidth: 704,
         width: '100%',
@@ -482,19 +487,45 @@ export const Post = ({relay, post, context}: Props) => {
   );
   const authors = post.assignees.nodes || [];
 
-  let { body } = post
+  let { body, labels: postLabels} = post
   const ast = markdownParser.parse(post.body);
   const meta = getMetaData(ast)
+
+  const labels = postLabels.nodes.filter(e => e.name.toLowerCase() !== 'publish')
   
+  console.log({
+    post,
+    labels
+  })
   // Remove metadata from md string
   if (Object.keys(meta).length) {
     ast.children = ast.children.slice(1, ast.children.length) 
     body = markdownParser.stringify(ast)
+    console.log(meta, meta.excerpt)
   }
   return (
     <PostBox>
-      <Box pad="medium">
-        <Heading>
+      {
+        context === 'details' ? (
+          <Helmet>
+            {
+              meta.title
+              ? <title>{meta.title}</title>
+              : <title>{post.title}</title>
+            }
+            {
+              meta.excerpt && (
+                <meta
+                  name="description"
+                  content={meta.excerpt}
+                />
+              )
+            }
+          </Helmet>
+        ) : null
+        }
+      <Box p={2}>
+        <Heading mb={2}>
           {context === 'details' ? (
             post.title
           ) : (
@@ -503,9 +534,26 @@ export const Post = ({relay, post, context}: Props) => {
             </Link>
           )}
         </Heading>
-        <Box direction="row" justify="between"></Box>
-        <Text>
-          <MarkdownRenderer escapeHtml={false} source={body} />
+        {
+          labels.map(label => (
+            <Box
+              p={1}
+              sx={{
+                bg: `#${label.color}`,
+                display: 'inline-block',
+                borderRadius: '2px'
+              }}
+            >
+              <Text>{label.name}</Text>
+            </Box>
+          ))
+        }
+        <Text mt={2} sx={{ fontSize: 3 }} >
+          {
+            (context === 'list' && meta.excerpt)
+            ? meta.excerpt
+            : <MarkdownRenderer escapeHtml={false} source={body} />
+          }
         </Text>
       </Box>
       <ReactionBar
@@ -526,6 +574,15 @@ export default createFragmentContainer(Post, {
       body
       createdAt
       updatedAt
+      labels(first: 100) {
+        nodes {
+          id
+          url
+          name
+          description
+          color
+        }
+      }
       assignees(first: 10) {
         nodes {
           id
