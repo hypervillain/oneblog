@@ -35,7 +35,7 @@
     "react-syntax-highlighter": "^11.0.2",
     "remark-stringify": "^7.0.4",
     "sentence-case": "^3.0.3",
-    "serialize-javascript": "^2.1.2",
+    "serialize-javascript": "^3.1.0",
     "styled-components": "^5.0.0",
     "theme-ui": "^0.3.1",
     "universal-cookie": "^4.0.3"
